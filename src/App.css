@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+.max-app { max-width: 1000px; margin: 0 auto; padding: 16px; font-family: system-ui, Arial, sans-serif; color: #111; }
+.max-header { padding: 12px 16px; background: #2e2e8f; color: #fff; border-radius: 12px 12px 0 0; }
+.max-logo { font-weight: 700; font-size: 18px; }
+.max-sub { opacity: .8; font-size: 12px; }
+.creds { display: flex; gap: 8px; padding: 12px; background: #f2f3ff; border: 1px solid #ddd; flex-wrap: wrap; }
+.creds label { display: flex; flex-direction: column; font-size: 12px; flex: 1; min-width: 160px; }
+.creds input { padding: 8px; border: 1px solid #bbb; border-radius: 8px; }
+.creds button, .newchat button, .composer button { padding: 9px 14px; border: 0; border-radius: 8px; background: #2e2e8f; color: #fff; cursor: pointer; }
+.creds button.ghost { background: #666; }
+.error { background: #ffe0e0; border: 1px solid #f00; padding: 8px 12px; margin-top: 8px; border-radius: 8px; }
+.layout { display: flex; border: 1px solid #ddd; border-top: 0; min-height: 480px; }
+.sidebar { width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: #fafaff; }
+.newchat { display: flex; gap: 6px; padding: 10px; }
+.newchat input { flex: 1; padding: 8px; border: 1px solid #bbb; border-radius: 8px; }
+.chatlist { flex: 1; overflow: auto; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+.chat { text-align: left; padding: 10px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; }
+.chat.active { border-color: #2e2e8f; background: #eef0ff; }
+.hint { font-size: 11px; color: #555; padding: 10px; }
+.chat { flex: 1; display: flex; flex-direction: column; }
+main.chat { flex: 1; }
+.chat-head { padding: 10px 14px; font-weight: 600; border-bottom: 1px solid #ddd; background: #fff; }
+.msgs { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #e9e9f5; overflow: auto; max-height: 520px; }
+.msg { display: flex; flex-direction: column; max-width: 70%; }
+.msg.me { align-self: flex-end; align-items: flex-end; }
+.msg.them { align-self: flex-start; }
+.bubble { padding: 9px 12px; border-radius: 12px; background: #fff; }
+.msg.me .bubble { background: #2e2e8f; color: #fff; }
+.time { font-size: 10px; color: #666; margin-top: 2px; }
+.composer { display: flex; gap: 8px; padding: 10px; background: #fff; border-top: 1px solid #ddd; }
+.composer input { flex: 1; padding: 10px; border: 1px solid #bbb; border-radius: 8px; }
+.empty { padding: 40px; text-align: center; color: #777; }
+.debug { margin-top: 12px; font-size: 12px; }

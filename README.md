@@ -1,5 +1,8 @@
 # Green-API MAX Chat — тестовое Frontend React
 
+Live: https://rolandsallaz.github.io/green-api-test/
+Repo: https://github.com/RolandSallaz/green-api-test
+
 Минимальный чат для отправки/получения текстовых сообщений через GREEN-API MAX.
 Прототип: https://web.max.ru/
 

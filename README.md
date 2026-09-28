@@ -38,8 +38,3 @@ npm run preview
 - `src/greenApi.ts` — SendMessage / Receive / Delete / normalizeChatId
 - `src/App.tsx` — логин, список чатов, сообщения, polling
 - `src/App.css` — минимал под web.max.ru
-
-## Для отправки HR
-- Тема: `Тестовое задание на должность - Фронтенд разработчик React`
-- Формат: удалёнка
-- Приложить: resume PDF + @RSallaz, github-репозиторий, эта инструкция, деплой-ссылка, скриншоты.

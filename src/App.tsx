@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Avatar,
+  Button,
+  Container,
+  Flex,
+  Grid,
+  Input,
+  Typography,
+} from '@maxhub/max-ui';
+import {
   deleteOne,
   extractTextMessage,
   normalizeChatId,
@@ -26,12 +35,6 @@ export default function App() {
   const [error, setError] = useState('');
   const [log, setLog] = useState<string[]>([]);
   const timer = useRef<number | null>(null);
-
-  const creds: GreenCredentials = {
-    apiUrl,
-    idInstance,
-    apiTokenInstance: apiToken,
-  };
 
   const pushLog = (s: string) =>
     setLog((p) => [`${new Date().toLocaleTimeString()} ${s}`, ...p].slice(0, 50));
@@ -75,7 +78,6 @@ export default function App() {
     }
     if (!draft.trim()) return;
     const text = draft.trim();
-    // optimistic
     const optimistic: ChatMessage = {
       id: `local-${Date.now()}`,
       chatId: activeChat,
@@ -89,6 +91,7 @@ export default function App() {
     }));
     setDraft('');
     try {
+      const creds: GreenCredentials = { apiUrl, idInstance, apiTokenInstance: apiToken };
       const idMessage = await sendTextMessage(creds, activeChat, text);
       pushLog(`Отправлено (${idMessage}) в ${activeChat}`);
     } catch (e) {
@@ -99,8 +102,9 @@ export default function App() {
 
   const pollOnce = useCallback(async () => {
     if (!idInstance.trim() || !apiToken.trim()) return;
+    const creds: GreenCredentials = { apiUrl, idInstance, apiTokenInstance: apiToken };
     try {
-      const n = await receiveOne({ apiUrl, idInstance, apiTokenInstance: apiToken });
+      const n = await receiveOne(creds);
       if (!n || !n.receiptId) return;
       const msg = extractTextMessage(n);
       if (msg) {
@@ -112,9 +116,8 @@ export default function App() {
         setActiveChat((a) => a || msg.chatId);
         pushLog(`Входящее от ${msg.chatId}: ${msg.text.slice(0, 60)}`);
       }
-      await deleteOne({ apiUrl, idInstance, apiTokenInstance: apiToken }, n.receiptId);
+      await deleteOne(creds, n.receiptId);
     } catch (e) {
-      // не спамим ошибками опроса, только в лог
       pushLog(e instanceof Error ? `poll: ${e.message.slice(0, 120)}` : 'poll error');
     }
   }, [apiUrl, idInstance, apiToken]);
@@ -131,127 +134,135 @@ export default function App() {
   const activeMessages = activeChat ? messages[activeChat] || [] : [];
 
   return (
-    <div className="max-app">
-      <header className="max-header">
-        <div className="max-logo">MAX chat · GREEN-API test</div>
-        <div className="max-sub">React · только текстовые сообщения · HTTP API polling</div>
-      </header>
+    <div className="max-panel">
+      <Container className="max-container">
+        <Flex direction="column" gap={12}>
+          <Flex align="center" gap={12}>
+            <Avatar.Container size={48} form="circle">
+              <Avatar.Text>MX</Avatar.Text>
+            </Avatar.Container>
+            <Flex direction="column" gap={2}>
+              <Typography.Title>MAX chat</Typography.Title>
+              <Typography.Body>GREEN-API · только текст · HTTP API</Typography.Body>
+            </Flex>
+          </Flex>
 
-      <section className="creds">
-        <label>
-          apiUrl
-          <input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} disabled={connected} />
-        </label>
-        <label>
-          idInstance *
-          <input
-            value={idInstance}
-            onChange={(e) => setIdInstance(e.target.value)}
-            placeholder="1101000001"
-            disabled={connected}
-          />
-        </label>
-        <label>
-          apiTokenInstance *
-          <input
-            value={apiToken}
-            onChange={(e) => setApiToken(e.target.value)}
-            placeholder="token"
-            type="password"
-            disabled={connected}
-          />
-        </label>
-        {!connected ? (
-          <button onClick={connect}>Войти</button>
-        ) : (
-          <button onClick={disconnect} className="ghost">
-            Отключиться
-          </button>
-        )}
-      </section>
-
-      {error && <div className="error">{error}</div>}
-
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="newchat">
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Номер: 79991234567"
-              disabled={!connected}
+          <Grid cols={4} gap={8}>
+            <Input
+              mode="default"
+              placeholder="apiUrl"
+              value={apiUrl}
+              onChange={(e) => setApiUrl(e.currentTarget.value)}
+              disabled={connected}
             />
-            <button onClick={createChat} disabled={!connected}>
-              + Чат
-            </button>
-          </div>
-          <div className="chatlist">
-            {chats.length === 0 && <div className="empty">Чатов пока нет</div>}
-            {chats.map((c) => (
-              <button
-                key={c}
-                className={c === activeChat ? 'chat active' : 'chat'}
-                onClick={() => setActiveChat(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-          <div className="hint">
-            chatId = телефон@c.us
-            <br />
-            Отправка: SendMessage
-            <br />
-            Получение: Receive/DeleteNotification (5с)
-          </div>
-        </aside>
+            <Input
+              mode="default"
+              placeholder="idInstance *"
+              value={idInstance}
+              onChange={(e) => setIdInstance(e.currentTarget.value)}
+              disabled={connected}
+            />
+            <Input
+              mode="default"
+              placeholder="apiTokenInstance *"
+              value={apiToken}
+              onChange={(e) => setApiToken(e.currentTarget.value)}
+              disabled={connected}
+            />
+            {!connected ? (
+              <Button variant="primary" size="medium" stretched onClick={connect}>
+                Войти
+              </Button>
+            ) : (
+              <Button variant="secondary" size="medium" stretched onClick={disconnect}>
+                Отключиться
+              </Button>
+            )}
+          </Grid>
 
-        <main className="chat">
-          {!activeChat ? (
-            <div className="empty">Выберите или создайте чат</div>
-          ) : (
-            <>
-              <div className="chat-head">{activeChat}</div>
-              <div className="msgs">
-                {activeMessages.map((m) => (
-                  <div key={m.id} className={m.fromMe ? 'msg me' : 'msg them'}>
-                    <div className="bubble">{m.text}</div>
-                    <div className="time">
-                      {new Date(m.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                ))}
-                {activeMessages.length === 0 && (
-                  <div className="empty">Пока пусто. Напишите первое сообщение.</div>
+          {error && <Typography.Body className="max-error">{error}</Typography.Body>}
+
+          <Grid cols={2} gap={12} className="max-layout">
+            <Flex direction="column" gap={8}>
+              <Flex gap={8}>
+                <Input
+                  mode="default"
+                  placeholder="Номер: 79991234567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.currentTarget.value)}
+                  disabled={!connected}
+                />
+                <Button variant="primary" size="medium" onClick={createChat} disabled={!connected}>
+                  + Чат
+                </Button>
+              </Flex>
+              <Flex direction="column" gap={6}>
+                {chats.length === 0 && (
+                  <Typography.Body>Чатов пока нет</Typography.Body>
                 )}
-              </div>
-              <div className="composer">
-                <input
+                {chats.map((c) => (
+                  <Button
+                    key={c}
+                    variant={c === activeChat ? 'primary' : 'secondary'}
+                    size="medium"
+                    stretched
+                    onClick={() => setActiveChat(c)}
+                  >
+                    {c}
+                  </Button>
+                ))}
+              </Flex>
+              <Typography.Body className="max-hint">
+                chatId = телефон@c.us · SendMessage · Receive/DeleteNotification (5с)
+              </Typography.Body>
+            </Flex>
+
+            <Flex direction="column" gap={8} className="max-chat">
+              <Typography.Title>{activeChat || 'Выберите или создайте чат'}</Typography.Title>
+              <Flex direction="column" gap={6} className="max-msgs">
+                {activeMessages.map((m) => (
+                  <Container
+                    key={m.id}
+                    className={m.fromMe ? 'max-bubble me' : 'max-bubble them'}
+                  >
+                    <Typography.Body>{m.text}</Typography.Body>
+                    <Typography.Label className="max-time">
+                      {new Date(m.timestamp).toLocaleTimeString()}
+                    </Typography.Label>
+                  </Container>
+                ))}
+                {activeChat !== '' && activeMessages.length === 0 && (
+                  <Typography.Body>Пока пусто. Напишите первое сообщение.</Typography.Body>
+                )}
+              </Flex>
+              <Flex gap={8}>
+                <Input
+                  mode="default"
+                  placeholder="Сообщение..."
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => setDraft(e.currentTarget.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') send();
                   }}
-                  placeholder="Сообщение..."
-                  disabled={!connected}
+                  disabled={!connected || !activeChat}
                 />
-                <button onClick={send} disabled={!connected}>
+                <Button variant="primary" onClick={send} disabled={!connected || !activeChat}>
                   ➤
-                </button>
-              </div>
-            </>
-          )}
-        </main>
-      </div>
+                </Button>
+              </Flex>
+            </Flex>
+          </Grid>
 
-      <details className="debug">
-        <summary>Лог ({log.length})</summary>
-        <ul>
-          {log.map((l, i) => (
-            <li key={i}>{l}</li>
-          ))}
-        </ul>
-      </details>
+          <details className="debug">
+            <summary>Лог ({log.length})</summary>
+            <ul>
+              {log.map((l, i) => (
+                <li key={i}>{l}</li>
+              ))}
+            </ul>
+          </details>
+        </Flex>
+      </Container>
     </div>
   );
 }
